@@ -5,7 +5,7 @@ from pygame.locals import *
 screen = pygame.display.set_mode((1024, 768))
 clock = pygame.time.Clock()
 
-class DuckySprite(pygame.sprite.Sprite):
+class TheSprite(pygame.sprite.Sprite):
 	def __init__(self, image, position):
 		pygame.sprite.Sprite.__init__(self)
 		self.src_image = pygame.image.load(image).convert()
@@ -43,21 +43,21 @@ class DuckySprite(pygame.sprite.Sprite):
 		else: self.rot_acc = 0
 		
 rect = screen.get_rect()
-ducky = DuckySprite('sprite.png', rect.center)
-ducky_group = pygame.sprite.RenderPlain(ducky)
+sprite = TheSprite('sprite.png', rect.center)
+sprite_group = pygame.sprite.RenderPlain(sprite)
 while 1:
 	t = 1.0 / clock.tick(30)
 	for event in pygame.event.get():
 		if not hasattr(event, 'key'): continue
 		down = event.type == KEYDOWN
-		if event.key == K_RIGHT: ducky.right(down)
-		elif event.key == K_LEFT: ducky.left(down)
-		elif event.key == K_UP: ducky.up(down)
-		elif event.key == K_DOWN: ducky.down(down)
+		if event.key == K_RIGHT: sprite.right(down)
+		elif event.key == K_LEFT: sprite.left(down)
+		elif event.key == K_UP: sprite.up(down)
+		elif event.key == K_DOWN: sprite.down(down)
 		elif event.key == K_ESCAPE: sys.exit(0)
 		
 	
 	screen.fill((255, 255, 255))
-	ducky_group.update(t)
-	ducky_group.draw(screen)
+	sprite_group.update(t)
+	sprite_group.draw(screen)
 	pygame.display.flip()
