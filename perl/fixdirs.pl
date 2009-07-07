@@ -9,9 +9,8 @@ foreach $file (@files) {
 	$newfile = join("/", @paths);
 	pop(@paths);
 	$newpath = join("/", @paths);
-	$file =~ s/\\/\\\\/g;
 	chomp($file);
-	print "mv $file $newfile";
-	`mkdir $newpath` if $newpath and (not (-e $newpath));
-	`mv $file $newfile` if not ($newfile == $file);
+        $file =~ s/\\/\\\\/g;
+	`mkdir $newpath` if $newpath and not (-e $newpath);
+	`mv $file $newfile`;
  }
