@@ -1,3 +1,7 @@
+--A module for balancing chemical equations.
+--Example: balance "H2 + O2 -> H2O"
+--All polyatomic ions must be surrounded by parentheses.
+
 module Balancer(balance) where
 
 import Data.List
