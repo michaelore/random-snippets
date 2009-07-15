@@ -13,6 +13,13 @@ class LazyList
         LazyList.new(first, self)
     end
 
+    def cons!(first)
+        newself = self.clone
+        @car = first
+        @cdr = newself
+        self
+    end
+
     def self.lcons(first, &block)
         LazyList.new(first, block)
     end
@@ -26,8 +33,22 @@ class LazyList
     end
 
     def each(&block)
-        block.call(@car)
-        cdr.each(&block)
+        node = self
+        loop do
+            block.call(node.car)
+            if node.cdr
+                node = node.cdr
+            else
+                break
+            end
+        end
+    end
+
+    def inspect
+        acc = ''
+        each {|x| acc << x.inspect << ' '}
+        acc.chop!
+        '(' + acc + ')'
     end
 end
 
