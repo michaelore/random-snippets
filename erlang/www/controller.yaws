@@ -4,10 +4,15 @@ out(A) ->
     Q = yaws_api:parse_query(A),
     dispatch(lkup("op", Q), A, Q).
 
-dispatch("click", A, Q) ->
+dispatch("clickx", _, Q) ->
+    send_back("/www/images/o.png", Q);
+dispatch("clicko", _, Q) ->
+    send_back("/www/images/x.png", Q).
+
+send_back(Image, Q) ->
     {content,
         "application/json; charset=iso-8859-1",
-        json:encode({struct, [{"id", lkup("id", Q)}, {"src", "/game/images/o.png"}]})}.
+        json:encode({struct, [{"id", lkup("id", Q)}, {"src", Image}]})}.
 
 lkup(Key, List) ->
     case lists:keysearch(Key, 1, List) of
