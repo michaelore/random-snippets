@@ -19,3 +19,10 @@ function click(id) {
         alert(e);
     }
 }
+document.onload(function() {
+	$.getJSON(server,
+	    {'op': "hello"},
+	    function(data) {
+	    $.each(data, function update);
+	    });
+	});
