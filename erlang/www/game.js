@@ -9,20 +9,20 @@ function click(id) {
 	}
         $.getJSON(server,
                 {'op': op, 'id': id},
-                function(data) {
-                try {
-                $("#" + data.id).attr({'src': data.src});
-                } catch (e) {
-                alert(e);
-                }})
+		function update);
     } catch(e) {
         alert(e);
     }
 }
+
+function update(data) {
+    $("#" + data.id).attr({'src': data.src});
+}
+
 document.onload(function() {
 	$.getJSON(server,
 	    {'op': "hello"},
-	    function(data) {
-	    $.each(data, function update);
+	    function(list) {
+	    $.each(list, function update);
 	    });
 	});
