@@ -33,8 +33,12 @@ handle_cast({update, Update}, Mat) ->
 handle_cast(stop, Mat) ->
     {stop, "'stop' was cast", Mat}.
 
-update({X, Y, New}, Mat) ->
-    array:set(X*Y, New, Mat).
+update({Id, Image}, Mat) ->
+    {X, Y} = parse_id(Id),
+    array:set((X-1)+10*(Y-1), New, Mat).
+
+parse_id([_,X,_,Y|_]) ->
+    {X-48, Y-48}.
 
 terminate(R, _) ->
     sender:send(sender, {terminated, R}),
