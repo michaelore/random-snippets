@@ -9,10 +9,10 @@
 -import(lists, [map/2, zip/2, duplicate/2]).
 -import(io_lib, [write/1, format/2]).
 
-out(A) -> {ehtml, table(duplicate(10, duplicate(10, "/game/images/x.png")))}.
+out(A) -> {ehtml, table(duplicate(10, duplicate(10, "/www/images/x.png")))}.
 
 numberMat(M) ->
-    Nums = fun(R) -> map(fun io_lib:write/1, range(1, length(R))) end,
+    Nums = fun(R) -> map(fun io_lib:write/1, range(0, length(R)-1)) end,
     zip(map(fun(R) -> zip(R, Nums(R)) end, M), Nums(M)).
 
 range(From, To) ->
