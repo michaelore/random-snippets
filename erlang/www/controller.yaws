@@ -17,9 +17,7 @@ dispatch("hello", _, Q) ->
 send_back(Image, Q) ->
     Id = lkup("id", Q),
     gameserver:send_update({Id, Image}),
-    {content,
-        "application/json; charset=iso-8859-1",
-        json:encode({struct, [{"id", Id}, {"src", Image}]})}.
+    return_json({struct, [{"id", Id}, {"src", Image}]}).
 
 lkup(Key, List) ->
     case lists:keysearch(Key, 1, List) of
@@ -27,4 +25,8 @@ lkup(Key, List) ->
     _                 -> false
     end.
 
+return_json(JSON) ->
+    {content,
+        "application/json; charset=iso-8859-1",
+        json:encode_json(JSON)}.
 </erl>
