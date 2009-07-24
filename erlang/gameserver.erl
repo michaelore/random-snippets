@@ -1,6 +1,6 @@
 -module(gameserver).
 -behaviour(gen_server).
--export([start/0, introduce/0, send_update/1, stop/0]).
+-export([start/0, introduce/0, send_update/1, stop/0, request_matrix/0]).
 -export([init/1, handle_call/3, handle_cast/2, terminate/2]).
 
 InitMat = array:map(fun(_) -> "/www/images/x.png" end, array:new(100)),
@@ -9,7 +9,10 @@ start() ->
     start_link({local, gameserver}, gameserver, InitMat, []).
 
 introduce() ->
-    gen_server:call(gameserver, hello).
+    gen_server:cast(gameserver, hello).
+
+request_matrix() ->
+    gen_server:call(gameserver, matrix_please).
 
 send_update(Update) ->
     gen_server:cast(gameserver, {update, Update}).
@@ -22,10 +25,12 @@ init(Mat) ->
     sender:start(sender),
     {ok, Mat}.
 
-handle_call(hello, From, Mat) ->
-    sender:add(sender, From),
-    {reply, Mat, Mat}.
+handle_call(matrix_please, _, Mat) ->
+    {reply, Mat}.
 
+handle_cast(hello, Mat) ->
+    sender:add(sender, From),
+    {noreply, Mat, Mat};
 handle_cast({update, Update}, Mat) ->
     sender:send(sender, {update, Update}),
     NewMat = update(Update, Mat),
