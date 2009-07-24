@@ -7,7 +7,11 @@ out(A) ->
 dispatch("clickx", _, Q) ->
     send_back("/www/images/o.png", Q);
 dispatch("clicko", _, Q) ->
-    send_back("/www/images/x.png", Q).
+    send_back("/www/images/x.png", Q);
+dispatch("hello", _, Q) ->
+    {PID, Mat} = gameclient:start(),
+    ID = io_lib:write(PID),
+    return_json({struct, [{"mat", {array, Mat}}, {"id", ID}]}).
 
 send_back(Image, Q) ->
     Id = lkup("id", Q),
