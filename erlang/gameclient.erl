@@ -11,5 +11,5 @@ init() ->
 loop(Updates) ->
     receive
         {update, Update} ->
-            queue:in(Update, Updates)
+            loop(queue:in(Update, Updates))
     end.
