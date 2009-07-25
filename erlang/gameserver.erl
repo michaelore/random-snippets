@@ -6,7 +6,7 @@
 InitMat = array:map(fun(_) -> "/www/images/x.png" end, array:new(100)),
 
 start() ->
-    start_link({local, gameserver}, gameserver, InitMat, []).
+    gen_server:start_link({local, gameserver}, gameserver, InitMat, []).
 
 introduce() ->
     gen_server:cast(gameserver, hello).
