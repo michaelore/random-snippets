@@ -1,4 +1,5 @@
 var server = "/game/controller.yaws";
+var client_id;
 function click(id) {
     try {
 	var op;
@@ -19,10 +20,20 @@ function update(data) {
     $("#" + data.id).attr({'src': data.src});
 }
 
+function request_update() {
+    $.getJSON(server,
+            {'op': "update", 'id': client_id},
+            function(mat) {
+            $.each(mat, function update);
+            });
+}
+
 document.onload(function() {
 	$.getJSON(server,
 	    {'op': "hello"},
-	    function(list) {
-	    $.each(list, function update);
+	    function(obj) {
+	    $.each(obj.mat, function update);
+            client_id = obj.id;
 	    });
+        setInterval("request_update", 50);
 	});
