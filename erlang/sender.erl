@@ -20,9 +20,10 @@ sender(PIDS) ->
     receive
         {add, PID} ->
             erlang:monitor(process, PID),
-            sender(sets:add_element(PIDS));
+            sender(sets:add_element(PID, PIDS));
         {send, Data} ->
-            sets:fold(fun(PID, _) -> gameclient:update(PID, Data) end, [], PIDS);
+            sets:fold(fun(PID, _) -> gameclient:update(PID, Data) end, [], PIDS),
+            sender(PIDS);
         stop ->
             ok;
         {'DOWN', _, PID, _} ->

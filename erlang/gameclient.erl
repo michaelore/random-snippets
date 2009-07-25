@@ -7,13 +7,13 @@ start() ->
     gen_server:start(gameclient, [], []).
 
 update(PID, Update) ->
-    gameclient:cast(PID, {update, Update}).
+    gen_server:cast(PID, {update, Update}).
 
 updates(PID) ->
-    gameclient:call(PID, updates).
+    gen_server:call(PID, updates).
 
 stop(PID) ->
-    gameclient:cast(PID, stop).
+    gen_server:cast(PID, stop).
 
 init(_) ->
     gameserver:introduce(),

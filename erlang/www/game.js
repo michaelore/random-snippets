@@ -1,16 +1,16 @@
-var server = "/game/controller.yaws";
-var client_id;
+var server = "/controller.yaws"
+var client_id
 function click(id) {
     try {
-	var op;
-	if ($("#" + id).attr("src")=="/www/images/x.png") {
-	    op = "clickx.png";
-	} else {
-	    op = "clicko.png";
-	}
+        var op;
+        if ($("#" + id).attr("src")=="/images/x.png") {
+            op = "clickx";
+        } else {
+            op = "clicko";
+        }
         $.getJSON(server,
                 {'op': op, 'id': id},
-		function update);
+                update);
     } catch(e) {
         alert(e);
     }
@@ -24,16 +24,16 @@ function request_update() {
     $.getJSON(server,
             {'op': "update", 'id': client_id},
             function(mat) {
-            $.each(mat, function update);
+            $.each(mat, function(id, image) {update({'id': id, 'src': image});});
             });
 }
 
-document.onload(function() {
-	$.getJSON(server,
-	    {'op': "hello"},
-	    function(obj) {
-	    $.each(obj.mat, function update);
+$(document).ready(function() {
+    $.getJSON(server,
+            {'op': "hello"},
+            function(obj) {
+            $.each(obj.mat, function(id, image) {update({'id': id, 'src': image});});
             client_id = obj.id;
-	    });
-        setInterval("request_update", 50);
-	});
+            setInterval("request_update()", 100);
+            });
+});

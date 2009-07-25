@@ -9,14 +9,15 @@ dispatch("clickx", _, Q) ->
 dispatch("clicko", _, Q) ->
     send_back("/images/x.png", Q);
 dispatch("hello", _, _) ->
-    PID = gameclient:start(),
+    {ok, PID} = gameclient:start(),
     Mat = gameserver:request_matrix(),
     ID = io_lib:write(PID),
     gameserver:store(ID, PID),
-    return_json({struct, [{"mat", {array, Mat}}, {"id", ID}]});
+    return_json({struct, [{"mat", {struct, Mat}}, {"id", ID}]});
 dispatch("update", _, Q) ->
     PID = gameserver:lookup(lkup("id", Q)),
-    return_json({array, gameclient:updates(PID)}).
+    Struct = gameclient:updates(PID),
+    return_json({struct, Struct}).
 
 send_back(Image, Q) ->
     Id = lkup("id", Q),
