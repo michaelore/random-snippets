@@ -32,7 +32,7 @@ init(Mat) ->
     {ok, Mat}.
 
 handle_call(matrix_please, _, {Mat, Dict}) ->
-    {reply, Mat, {Mat, Dict}};
+    {reply, array:to_list(Mat), {Mat, Dict}};
 handle_call({lookup, Key}, _, {Mat, Dict}) ->
     {reply, fetch(Key, Dict), {Mat, Dict}}.
 
