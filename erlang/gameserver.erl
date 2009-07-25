@@ -51,7 +51,7 @@ handle_cast(stop, {Mat, Dict}) ->
 
 update({Id, Image}, Mat) ->
     {X, Y} = parse_id(Id),
-    array:set((X-1)+10*(Y-1), New, Mat).
+    array:set(X+10*Y, New, Mat).
 
 parse_id([_,X,_,Y|_]) ->
     {X-48, Y-48}.
