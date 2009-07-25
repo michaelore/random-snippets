@@ -22,7 +22,7 @@ sender(PIDS) ->
             monitor(process, PID),
             sender(sets:add_element(PIDS));
         {send, Data} ->
-            sets:fold(fun(PID, _) -> PID ! Data end, [], PIDS); %Sends each PID the data
+            sets:fold(fun(PID, _) -> gameclient:update(PID, data) end, [], PIDS);
         stop ->
             ok;
         {'DOWN', _, PID, _} ->
