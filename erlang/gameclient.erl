@@ -1,15 +1,31 @@
 -module(gameclient).
--export([start/0].
+-behaviour(gen_server).
+-export([start/0, update/2, updates/1].
+-export([init/1, handle_call/3, handle_cast/2, terminate/2]).
 
 start() ->
-    spawn(fun init/0).
+    gen_server:start(gameclient, [], []).
 
-init() ->
+update(PID, Update) ->
+    gameclient:cast(PID, {update, Update}).
+
+updates(PID) ->
+    gameclient:call(PID, updates).
+
+stop(PID) ->
+    gameclient:cast(PID, stop).
+
+init(_) ->
     gameserver:introduce(),
-    loop(queue:new()).
+    {ok, queue:new()}.
 
-loop(Updates) ->
-    receive
-        {update, Update} ->
-            loop(queue:in(Update, Updates))
-    end.
+handle_call(updates, _, Updates) ->
+    {reply, queue:to_list(Updates), queue:new()}.
+
+handle_cast({update, Update}, Updates) ->
+    {noreply, queue:in(Update, Updates)};
+handle_cast(stop, Updates) ->
+    {stop, "'stop' was cast", Updates}.
+
+terminate(R, _) ->
+    void.
