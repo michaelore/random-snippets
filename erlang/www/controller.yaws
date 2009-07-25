@@ -5,9 +5,9 @@ out(A) ->
     dispatch(lkup("op", Q), A, Q).
 
 dispatch("clickx", _, Q) ->
-    send_back("/www/images/o.png", Q);
+    send_back("/images/o.png", Q);
 dispatch("clicko", _, Q) ->
-    send_back("/www/images/x.png", Q);
+    send_back("/images/x.png", Q);
 dispatch("hello", _, _) ->
     PID = gameclient:start(),
     Mat = gameserver:request_matrix(),
@@ -32,5 +32,5 @@ lkup(Key, List) ->
 return_json(JSON) ->
     {content,
         "application/json; charset=iso-8859-1",
-        json:encode_json(JSON)}.
+        json:encode(JSON)}.
 </erl>
