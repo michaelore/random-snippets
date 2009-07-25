@@ -1,5 +1,5 @@
 -module(sender).
--export(start/1, add/2, send/2, stop/1).
+-export([start/1, add/2, send/2, stop/1]).
 
 start(Name) ->
     put(Name, spawn_link(fun sender/0)).
@@ -19,10 +19,10 @@ sender() ->
 sender(PIDS) ->
     receive
         {add, PID} ->
-            monitor(process, PID),
+            erlang:monitor(process, PID),
             sender(sets:add_element(PIDS));
         {send, Data} ->
-            sets:fold(fun(PID, _) -> gameclient:update(PID, data) end, [], PIDS);
+            sets:fold(fun(PID, _) -> gameclient:update(PID, Data) end, [], PIDS);
         stop ->
             ok;
         {'DOWN', _, PID, _} ->

@@ -2,14 +2,13 @@
 -behaviour(gen_server).
 -export([start/0, introduce/0, send_update/1, stop/0, request_matrix/0, store/2, lookup/1]).
 -export([init/1, handle_call/3, handle_cast/2, terminate/2]).
-
-InitMat = array:map(fun(_) -> "/www/images/x.png" end, array:new(100)),
+-define(INITMAT, array:map(fun(_) -> "/www/images/x.png" end, array:new(100))).
 
 start() ->
-    gen_server:start_link({local, gameserver}, gameserver, InitMat, []).
+    gen_server:start_link({local, gameserver}, gameserver, ?INITMAT, []).
 
 introduce() ->
-    gen_server:cast(gameserver, hello).
+    gen_server:call(gameserver, hello).
 
 request_matrix() ->
     gen_server:call(gameserver, matrix_please).
@@ -34,11 +33,11 @@ init(Mat) ->
 handle_call(matrix_please, _, {Mat, Dict}) ->
     {reply, array:to_list(Mat), {Mat, Dict}};
 handle_call({lookup, Key}, _, {Mat, Dict}) ->
-    {reply, fetch(Key, Dict), {Mat, Dict}}.
-
-handle_cast(hello, {Mat, Dict}) ->
+    {reply, dict:fetch(Key, Dict), {Mat, Dict}};
+handle_call(hello, From, {Mat, Dict}) ->
     sender:add(sender, From),
-    {noreply, Mat, {Mat, Dict}};
+    {reply, ok, {Mat, Dict}}.
+
 handle_cast({update, Update}, {Mat, Dict}) ->
     sender:send(sender, {update, Update}),
     NewMat = update(Update, {Mat, Dict}),
@@ -51,7 +50,7 @@ handle_cast(stop, {Mat, Dict}) ->
 
 update({Id, Image}, Mat) ->
     {X, Y} = parse_id(Id),
-    array:set(X+10*Y, New, Mat).
+    array:set(X+10*Y, Image, Mat).
 
 parse_id([_,X,_,Y|_]) ->
     {X-48, Y-48}.

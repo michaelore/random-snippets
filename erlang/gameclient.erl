@@ -1,6 +1,6 @@
 -module(gameclient).
 -behaviour(gen_server).
--export([start/0, update/2, updates/1].
+-export([start/0, update/2, updates/1, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, terminate/2]).
 
 start() ->
