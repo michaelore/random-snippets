@@ -2,31 +2,32 @@
 -behaviour(gen_server).
 -export([start/0, introduce/0, send_update/1, stop/0, request_matrix/0, store/2, lookup/1]).
 -export([init/1, handle_call/3, handle_cast/2, terminate/2]).
--define(INITMAT, array:map(fun(_) -> "/www/images/x.png" end, array:new(100))).
+-define(INITMAT, array:from_list(lists:duplicate(100, "/images/x.png"))).
 
 start() ->
     gen_server:start_link({local, gameserver}, gameserver, ?INITMAT, []).
 
 introduce() ->
-    gen_server:call(gameserver, hello).
+    gen_server:call({local, gameserver}, hello).
 
 request_matrix() ->
-    gen_server:call(gameserver, matrix_please).
+    gen_server:call({local, gameserver}, matrix_please).
 
 send_update(Update) ->
-    gen_server:cast(gameserver, {update, Update}).
+    gen_server:cast({local, gameserver}, {update, Update}).
 
 stop() ->
-    gen_server:cast(gameserver, stop).
+    gen_server:cast({local, gameserver}, stop).
 
 store(Key, Value) ->
-    gen_server:cast(gameserver, {store, Key, Value}).
+    gen_server:cast({local, gameserver}, {store, Key, Value}).
 
 lookup(Key) ->
-    gen_server:call(gameserver, {lookup, Key}).
+    gen_server:call({local, gameserver}, {lookup, Key}).
 
 init(Mat) ->
-    yaws:start_embedded("./www/"),
+    {ok, WD} = file:get_cwd(),
+    yaws:start_embedded(WD ++ "/www/"),
     sender:start(sender),
     {ok, Mat}.
 
