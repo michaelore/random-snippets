@@ -11,6 +11,7 @@ dispatch("clicko", _, Q) ->
 dispatch("hello", _, Q) ->
     PID = gameclient:start(),
     Mat = gameserver:request_matrix(),
+    gameserver:store(ID, PID),
     ID = io_lib:write(PID),
     return_json({struct, [{"mat", {array, Mat}}, {"id", ID}]}).
 
