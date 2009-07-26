@@ -2,6 +2,12 @@
 <head>
 <script type="text/javascript" src="jquery.js" ></script>
 <script type="text/javascript" src="game.js"></script>
+<style type="text/css">
+table {
+    border-spacing: 0px;
+    border-collapse: collapse;
+}
+</style>
 </head>
 <body>
 <erl>
@@ -9,7 +15,7 @@
 -import(lists, [map/2, zip/2, duplicate/2]).
 -import(io_lib, [write/1, format/2]).
 
-out(A) -> {ehtml, table(duplicate(10, duplicate(10, "/images/x.png")))}.
+out(A) -> {ehtml, table(duplicate(10, duplicate(10, "images/blank.png")))}.
 
 numberMat(M) ->
     Nums = fun(R) -> map(fun io_lib:write/1, range(0, length(R)-1)) end,

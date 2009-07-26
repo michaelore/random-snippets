@@ -35,7 +35,9 @@ lookup(Key) ->
 
 init(Mat) ->
     {ok, WD} = file:get_cwd(),
-    yaws:start_embedded(WD ++ "/www/"),
+    yaws:start_embedded(
+        WD ++ "/www/",
+        [{servername, "louhikko"}, {listen, {0,0,0,0}}]),
     sender:start(sender),
     {ok, Mat}.
 
