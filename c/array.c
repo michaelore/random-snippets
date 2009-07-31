@@ -28,7 +28,7 @@
     } \
     int ARRAY##_add(TYPE elem) { \
 	if (ARRAY##_elems == ARRAY##_size) { \
-	    if (ARRAY##_expand) { \
+	    if (ARRAY##_expand(ARRAY##_size)) { \
 		return -1; \
 	    } \
 	} \
