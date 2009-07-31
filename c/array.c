@@ -16,7 +16,7 @@
     int ARRAY##_elems = 0; \
     int ARRAY##_alloc = SIZE; \
     TYPE ARRAY[SIZE]; \
-    int ARRAY##_expand(amount) { \
+    int ARRAY##_expand(int amount) { \
 	ARRAY##_alloc += amount; \
 	void *new_array = realloc(ARRAY, ARRAY##_alloc * sizeof(TYPE)); \
 	if (!new_array) { \
@@ -26,7 +26,7 @@
 	ARRAY = (TYPE*)new_array; \
 	return 0; \
     } \
-    int ARRAY##_add(elem) { \
+    int ARRAY##_add(TYPE elem) { \
 	if (ARRAY##_elems == ARRAY##_size) { \
 	    if (ARRAY##_expand) { \
 		return -1; \
