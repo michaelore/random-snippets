@@ -7,7 +7,7 @@
     { \
 	int i; \
 	TYPE *it; \
-	for(i = 0, it = ARRAY; i < SIZE; i++, it +=1) { \
+	for(i = 0, it = ARRAY; i < SIZE; i++, it++) { \
 	    CODE \
 	} \
     }
