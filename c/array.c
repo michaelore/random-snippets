@@ -16,7 +16,7 @@
 #define dostatarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, sizeof(ARRAY) / sizeof(TYPE), CODE)
 
 // Instance of doarray for dynamice arrays.
-#define dodynarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, ARRAY##_alloc, CODE)
+#define dodynarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, ARRAY##_elems, CODE)
 
 // Defines a dynamic array and a function that adds an element to it.
 // If there is not enough room to add an element, the array doubles in length.
