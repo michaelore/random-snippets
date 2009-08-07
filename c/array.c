@@ -5,7 +5,7 @@
 // SIZE the number of elements, not the size in bytes.
 #define doarray(TYPE, ARRAY, SIZE, CODE) \
     { \
-	int i; \
+	long i; \
 	TYPE *it; \
 	for(i = 0, it = ARRAY; i < SIZE; i++, it++) { \
 	    CODE \
@@ -18,31 +18,37 @@
 // Instance of doarray for dynamice arrays.
 #define dodynarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, ARRAY##_elems, CODE)
 
-// Defines a dynamic array and a function that adds an element to it.
-// If there is not enough room to add an element, the array doubles in length.
-// The name of the function is (name_of_array)_add.
-// SIZE is the number of initial elements, not the number of bytes.
-#define defdynamicarray(TYPE, ARRAY, SIZE) \
-    int ARRAY##_elems = 0; \
-    int ARRAY##_alloc = SIZE; \
-    TYPE *ARRAY = calloc(SIZE, sizeof(TYPE)); \
-    int ARRAY##_expand(int amount) { \
-	ARRAY##_alloc += amount; \
-	void *new_array = realloc(ARRAY, ARRAY##_alloc * sizeof(TYPE)); \
+// Defines a new type of dynamic array.
+#define defdynamicarray(TYPE) \
+    typedef struct { \
+        TYPE *array; \
+        long elems; \
+        long alloc; \
+    } dynamic##_TYPE
+
+// Expands a dynamic array.
+#define dynamic_expand(TYPE, NAME, AMOUNT) { \
+	void *new_array = realloc(NAME.array, NAME.alloc * sizeof(TYPE)); \
 	if (!new_array) { \
 	    fprintf(stderr, "ERROR: Could not expand array.\n"); \
-	    return -1; \
-	} \
-	ARRAY = (TYPE*)new_array; \
-	return 0; \
-    } \
-    int ARRAY##_add(TYPE elem) { \
-	if (ARRAY##_elems == ARRAY##_alloc) { \
-	    if (ARRAY##_expand(ARRAY##_alloc)) { \
-		return -1; \
-	    } \
-	} \
-	ARRAY[ARRAY##_elems] = elem; \
-	ARRAY##_elems++; \
-	return 0; \
+	} else { \
+	NAME.alloc += AMOUNT; \
+	NAME.array = (TYPE*)new_array; \
+        } \
     }
+
+// Adds an element to a dynamic array, doubling its size with dynamic_expand if necessary.
+#define dynamic_add(TYPE, NAME, ELEM) { \
+	if (NAME.elems == NAME.alloc) { \
+	    dynamic_expand(TYPE, NAME, NAME.alloc); \
+	} \
+	NAME.array[NAME.elems] = ELEM; \
+	NAME.elems++; \
+    }
+
+//Initializes a dynamic array.
+#define dynamic_init(TYPE, NAME, SIZE) \
+    dynamic##_TYPE NAME; \
+    NAME.elems = 0; \
+    NAME.alloc = SIZE; \
+    NAME.array = calloc(SIZE, sizeof(TYPE));
