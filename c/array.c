@@ -16,15 +16,14 @@
 #define dostatarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, sizeof(ARRAY) / sizeof(TYPE), CODE)
 
 // Instance of doarray for dynamice arrays.
-#define dodynarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, ARRAY##_elems, CODE)
+#define dodynarray(TYPE, ARRAY, CODE) doarray(TYPE, ARRAY, ARRAY.elems, CODE)
 
-// Defines a new type of dynamic array.
-#define defdynamicarray(TYPE) \
-    typedef struct { \
-        TYPE *array; \
-        long elems; \
-        long alloc; \
-    } dynamic##_TYPE
+// Defines dynamic arrays.
+typedef struct { \
+    void *array; \
+    long elems; \
+    long alloc; \
+} dynamic_array;
 
 // Expands a dynamic array.
 #define dynamic_expand(TYPE, NAME, AMOUNT) { \
@@ -42,13 +41,13 @@
 	if (NAME.elems == NAME.alloc) { \
 	    dynamic_expand(TYPE, NAME, NAME.alloc); \
 	} \
-	NAME.array[NAME.elems] = ELEM; \
+	((TYPE *)NAME.array)[NAME.elems] = ELEM; \
 	NAME.elems++; \
     }
 
 //Initializes a dynamic array.
 #define dynamic_init(TYPE, NAME, SIZE) \
-    dynamic##_TYPE NAME; \
+    dynamic_array NAME; \
     NAME.elems = 0; \
     NAME.alloc = SIZE; \
     NAME.array = calloc(SIZE, sizeof(TYPE));
