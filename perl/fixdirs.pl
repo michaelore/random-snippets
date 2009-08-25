@@ -1,8 +1,5 @@
 #!/usr/bin/perl
-#Zip archives made in Windows don't unzip correctly in Unix;
-# the subdirecteries have \'s instead of /'s.
-#This script fixes the subdirecteries when run inside the
-# folder where the archived was unzipped to.
+#Eliminates \'s in filenames
 my @files = `ls`;
 foreach $file (@files) {
 	@paths = split(/\\/, $file);
