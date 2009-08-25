@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#Eliminates \'s in filenames
+#Transforms \'s in pathnames into /'s, creating subdirectories
 my @files = `ls`;
 foreach $file (@files) {
 	@paths = split(/\\/, $file);
