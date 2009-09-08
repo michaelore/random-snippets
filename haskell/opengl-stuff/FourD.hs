@@ -1,19 +1,8 @@
 module FourD where
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT
-import Control.Arrow
 
 data Dim = W | X | Y | Z deriving (Eq, Show)
-
-getDim W = getW
-getDim X = getX
-getDim Y = getY
-getDim Z = getZ
-
-excludeDim W (FourPoint _ x y z) = Vertex3 x y z
-excludeDim X (FourPoint w _ y z) = Vertex3 w y z
-excludeDim Y (FourPoint w x _ z) = Vertex3 w x z
-excludeDim Z (FourPoint w x y _) = Vertex3 w x y
 
 dims = [W, X, Y, Z]
 
@@ -27,6 +16,16 @@ data FourPoint = FourPoint {
     getZ :: GLfloat
 }
 
+getDim W = getW
+getDim X = getX
+getDim Y = getY
+getDim Z = getZ
+
+excludeDim W (FourPoint _ x y z) = Vertex3 x y z
+excludeDim X (FourPoint w _ y z) = Vertex3 w y z
+excludeDim Y (FourPoint w x _ z) = Vertex3 w x z
+excludeDim Z (FourPoint w x y _) = Vertex3 w x y
+
 instance FourPrimitive FourPoint where
     renderFP point dim n =
         if getDim dim point == n then
@@ -37,16 +36,13 @@ instance FourPrimitive FourPoint where
 within :: (Ord a) => a -> a -> a -> Bool
 within a b c = max b c > a && a > min b c
 
-split :: (Arrow a) => a b c -> a (b, b) (c, c)
-split x = x *** x
-
 data FourLine = FourLine FourPoint FourPoint
 
 instance FourPrimitive FourLine where
     renderFP (FourLine point1 point2) dim n =
         if getDim dim point1 == n && getDim dim point2 == n then
-            renderPrimitive Lines  (mapM_ (vertex . excludeDim dim) [point1, point2]) >> return ()
-        else if not (within n (getDim dim point1) (getDim dim point2)) then
+            renderPrimitive Lines (mapM_ (vertex . excludeDim dim) [point1, point2]) >> return ()
+        else if not $ within n (getDim dim point1) (getDim dim point2) then
                 return ()
             else renderPrimitive Points (vertex$Vertex3 (intersection !! 0) (intersection !! 1) (intersection !! 2)) >> return ()
             where intersection = [fun d | d <- dims, d /= dim]
@@ -60,6 +56,13 @@ data FourTriangle = FourTriangle FourPoint FourPoint FourPoint
 
 instance FourPrimitive FourTriangle where
     renderFP (FourTriangle point1 point2 point3) dim n =
-        if getDim dim point1 == n && getDim dim point2 == n && getDim dim point3 == n then
-            renderPrimitive Triangles (mapM_ (vertex . excludeDim dim) [point1, point2, point3]) >> return ()
-        else undefined
+        case map (\x -> getDim dim x == n) [point1, point2, point3] of
+            [True, True, True] -> renderPrimitive Triangles (mapM_ (vertex . excludeDim dim) [point1, point2, point3]) >> return ()
+            [False, True, True] -> twoPoints point2 point3
+            [True, False, True] -> twoPoints point1 point3
+            [True, True, False] -> twoPoints point1 point2
+            [True, False, False] -> onePoint point1
+            [False, True, False] -> onePoint point2
+            [False, False, True] -> onePoint point3
+        where twoPoints = undefined
+              onePoint = undefined
