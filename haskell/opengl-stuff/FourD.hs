@@ -45,8 +45,8 @@ data FourLine = FourLine FourPoint FourPoint
 instance FourPrimitive FourLine where
     renderFP (FourLine point1 point2) dim n =
         if getDim dim point1 == n && getDim dim point2 == n then
-            renderPrimitive Lines (runKleisli (split (Kleisli $ vertex . excludeDim dim)) $ (point1, point2)) >> return ()
-        else if not (split (getDim dim) >>> (uncurry $ within n) $ (point1, point2)) then
+            renderPrimitive Lines  (mapM_ (vertex . excludeDim dim) [point1, point2]) >> return ()
+        else if not (within n (getDim dim point1) (getDim dim point2)) then
                 return ()
             else renderPrimitive Points (vertex$Vertex3 (intersection !! 0) (intersection !! 1) (intersection !! 2)) >> return ()
             where intersection = [fun d | d <- dims, d /= dim]
@@ -59,4 +59,7 @@ instance FourPrimitive FourLine where
 data FourTriangle = FourTriangle FourPoint FourPoint FourPoint
 
 instance FourPrimitive FourTriangle where
-    renderFP (FourTriangle point1 point2)
+    renderFP (FourTriangle point1 point2 point3) dim n =
+        if getDim dim point1 == n && getDim dim point2 == n && getDim dim point3 == n then
+            renderPrimitive Triangles (mapM_ (vertex . excludeDim dim) [point1, point2, point3]) >> return ()
+        else undefined
