@@ -8,8 +8,8 @@ display time = do
     clear [ColorBuffer]
     loadIdentity
     t <- get time
-    renderFP (FourTriangle (FourPoint (-0.5) (-0.5) (-0.5) 0) (FourPoint (-0.5) 0.5 0.5 0) (FourPoint 0.5 (-0.5) 0.5 0)) W (sin t)
-    renderFP (FourTriangle (FourPoint (-0.5) (-0.5) (-0.5) 0) (FourPoint 0.5 (-0.5) (-0.5) 0) (FourPoint 0.5 (-0.5) 0.5 0)) W (sin t)
+    renderFP (FourTriangle (FourPoint 0 (-0.5) (-0.5) 0) (FourPoint 0 0.5 0.5 0) (FourPoint 0.5 (-0.5) 0.5 0)) W (sin t)
+    renderFP (FourTriangle (FourPoint 0 (-0.5) (-0.5) 0) (FourPoint 0 0.5 0.5 0) (FourPoint (-0.5) 0.5 (-0.5) 0)) W (sin t)
     swapBuffers
 
 {-
