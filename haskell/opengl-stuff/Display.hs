@@ -5,11 +5,11 @@ import Data.IORef
 import FourD
 
 display time = do
+    t <- get time
     clear [ColorBuffer]
     loadIdentity
-    t <- get time
-    renderFP (FourTriangle (FourPoint 0 (-1) (-1) 0) (FourPoint 0 1 1 0) (FourPoint 1 (-1) 1 0)) W (sin t)
-    renderFP (FourTriangle (FourPoint 0 (-1) (-1) 0) (FourPoint 0 1 1 0) (FourPoint (-1) 1 (-1) 0)) W (sin t)
+    scale 0.7 0.7 (0.7 :: GLfloat)
+    renderFP (FourTetrahedron (FourPoint (-0.5) 1 1 1) (FourPoint (0.5) (-1) (-1) 1) (FourPoint (-0.5) (-1) 1 (-1)) (FourPoint (0.5) 1 (-1) (-1))) W 0
     swapBuffers
 
 {-
