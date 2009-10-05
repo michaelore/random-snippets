@@ -1,3 +1,4 @@
+#Warning: does not work with ruby 1.9.x
 #An exploration of monads in Ruby.
 #The Perhaps stuff was inspired by this:
 #http://www.randomhacks.net/articles/2007/02/21/refactoring-probability-distributions
