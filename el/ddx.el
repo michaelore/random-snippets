@@ -40,12 +40,13 @@
 		      ,(funcall ddr (cadr args))))
 		(expt ,(cadr args) 2)))
 
-;Unfinished
-;(add-rule expt `(* ,(ddr (car args))
-;		   ,(if (eql (cadr args) 1)
-;			`(log (abs ,var))
-;		      `(* ,(cadr args)
-			  
+(add-rule expt `(* (expt ,(car args)
+			 ,(cadr args))
+		   (+ (/ (* ,(cadr args)
+			    ,(funcall ddr (car args)))
+			 ,(car args))
+		      (* (log ,(car args))
+			 ,(funcall ddr (cadr args))))))
 		     
 (setq *dd-funs* (make-hash-table))
 
@@ -61,6 +62,6 @@
 
 (add-fun sin (cos var))
 
-(add-fun cos (- (sin var))
+(add-fun cos (- (sin var)))
 
 (add-fun tan (/ 1 (expt (cos var) 2)))
