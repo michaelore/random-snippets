@@ -12,7 +12,7 @@
 					       (cadr expr)))
 			       nil))
 			    (t nil)))
-	(t il)))
+	(t nil)))
 
 (setq *dd-rules* (make-hash-table))
 
@@ -29,16 +29,32 @@
 
 (add-rule - (cons '- (mapcar ddr args)))
 
-(add-rule * `(+ (* ,(cadr args)
-		   ,(funcall ddr (car args)))
-		(* ,(car args)
-		   ,(funcall ddr (cadr args)))))
+(defun doto-nth-elem (n fun xs)
+  (cond ((not xs) xs)
+	((eql n 0)
+	 (cons (funcall fun (car xs)) (cdr xs)))
+	(t (cons (car xs) (doto-nth-elem (- n 1) fun (cdr xs))))))
 
-(add-rule / `(/ (- (* ,(cadr args)
-		      ,(funcall ddr (car args)))
-		   (* ,(car args)
-		      ,(funcall ddr (cadr args))))
-		(expt ,(cadr args) 2)))
+(add-rule * (cons '+ (progn (setq acc '())
+			    (dotimes (i (length args))
+			      (push (cons '* (doto-nth-elem i ddr args)) acc))
+			    acc)))
+
+(add-rule / (cons '- (cons `(/ ,(funcall ddr (car args))
+			       ,@(cdr args))
+			   (progn (setq acc '())
+				  (dotimes (i (length (cdr args)))
+				    (push `(/ (* ,(car args) ,(funcall ddr (nth i (cdr args))))
+					      (* ,@(doto-nth-elem i (lambda (g) `(expt ,g 2)) (cdr args)))) acc))
+				  acc))))
+
+;(f g h)
+;(- (/ (ddr f)
+;      (* g h))
+;   (/ (* f (ddr g))
+;      (* (expt g 2) h))
+;   (/ (* f (ddr h))
+;      (* g (expt h 2))))
 
 (add-rule expt `(* (expt ,(car args)
 			 ,(cadr args))
