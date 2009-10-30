@@ -18,16 +18,16 @@
 
 (setq *dd-rule-keys* '())
 
-(defmacro add-rule (fun body)
+(defmacro add-dd-rule (fun body)
   `(progn (push ',fun *dd-rule-keys*)
 	  (puthash ',fun (lambda (var args)
 			   (let ((ddr (lambda (expr) (dd var expr))))
 			     ,body))
 		   *dd-rules*)))
 
-(add-rule + (cons '+ (mapcar ddr args)))
+(add-dd-rule + (cons '+ (mapcar ddr args)))
 
-(add-rule - (cons '- (mapcar ddr args)))
+(add-dd-rule - (cons '- (mapcar ddr args)))
 
 (defun doto-nth-elem (n fun xs)
   (cond ((not xs) xs)
@@ -35,49 +35,41 @@
 	 (cons (funcall fun (car xs)) (cdr xs)))
 	(t (cons (car xs) (doto-nth-elem (- n 1) fun (cdr xs))))))
 
-(add-rule * (cons '+ (progn (setq acc '())
-			    (dotimes (i (length args))
-			      (push (cons '* (doto-nth-elem i ddr args)) acc))
-			    acc)))
+(add-dd-rule * (cons '+ (progn (setq acc '())
+			       (dotimes (i (length args))
+				 (push (cons '* (doto-nth-elem i ddr args)) acc))
+			       acc)))
 
-(add-rule / (cons '- (cons `(/ ,(funcall ddr (car args))
-			       ,@(cdr args))
-			   (progn (setq acc '())
-				  (dotimes (i (length (cdr args)))
-				    (push `(/ (* ,(car args) ,(funcall ddr (nth i (cdr args))))
-					      (* ,@(doto-nth-elem i (lambda (g) `(expt ,g 2)) (cdr args)))) acc))
-				  acc))))
+(add-dd-rule / (cons '- (cons `(/ ,(funcall ddr (car args))
+				  ,@(cdr args))
+			      (progn (setq acc '())
+				     (dotimes (i (length (cdr args)))
+				       (push `(/ (* ,(car args) ,(funcall ddr (nth i (cdr args))))
+						 (* ,@(doto-nth-elem i (lambda (g) `(expt ,g 2)) (cdr args)))) acc))
+				     acc))))
 
-;(f g h)
-;(- (/ (ddr f)
-;      (* g h))
-;   (/ (* f (ddr g))
-;      (* (expt g 2) h))
-;   (/ (* f (ddr h))
-;      (* g (expt h 2))))
-
-(add-rule expt `(* (expt ,(car args)
-			 ,(cadr args))
-		   (+ (/ (* ,(cadr args)
-			    ,(funcall ddr (car args)))
-			 ,(car args))
-		      (* (log ,(car args))
-			 ,(funcall ddr (cadr args))))))
+(add-dd-rule expt `(* (expt ,(car args)
+			    ,(cadr args))
+		      (+ (/ (* ,(cadr args)
+			       ,(funcall ddr (car args)))
+			    ,(car args))
+			 (* (log ,(car args))
+			    ,(funcall ddr (cadr args))))))
 		     
 (setq *dd-funs* (make-hash-table))
 
 (setq *dd-fun-keys* '())
 
-(defmacro add-fun (fun body)
+(defmacro add-dd-fun (fun body)
   `(progn (push ',fun *dd-fun-keys*)
 	  (puthash ',fun (lambda (var)
 			   ',body)
 		   *dd-funs*)))
 
-(add-fun exp (exp var))
+(add-dd-fun exp (exp var))
 
-(add-fun sin (cos var))
+(add-dd-fun sin (cos var))
 
-(add-fun cos (- (sin var)))
+(add-dd-fun cos (- (sin var)))
 
-(add-fun tan (/ 1 (expt (cos var) 2)))
+(add-dd-fun tan (/ 1 (expt (cos var) 2)))
