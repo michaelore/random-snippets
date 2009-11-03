@@ -2,11 +2,7 @@
 		   (if (some (lambda (x) (eql x 0)) expr)
 		       0
 		     expr)
-		   (mapcan (lambda (x) (if (eql x 1) '() x)) expr))
+		   (remove-if (lambda (x) (eql x 1)) expr))
 
 (add-simplify-rule +
-		   (mapcan (lambda (x) (if (eql x 0) '() x)) expr))
-
-(add-simplify-rule /
-		   (cond ((memq (cadr expr) (cddr expr))
-			  (
+		   (remove-if (lambda (x) (eql x 0)) expr))
