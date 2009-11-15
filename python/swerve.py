@@ -2,9 +2,14 @@
 
 # Magic numbers!
 # Warning: may be arbitrary.
+min_speed = 0.3
+min_rot_speed = 0.05
 max_speed = 100
-fric_acc = 50 # Not to be confused with coefficient of friction
+max_rot_speed = 2
+fric_acc = 50
+fric_rot_acc = 1
 mot_acc = 100
+time_step = 0.1
 
 import threading
 import pygame, sys
@@ -86,7 +91,7 @@ class Robot:
 		self.wheel_rot_vel = self.swerve_motor
 		self.x_vel = limit(self.x_vel + self.x_acc * t, -max_speed, max_speed)
 		self.y_vel = limit(self.y_vel + self.y_acc * t, -max_speed, max_speed)
-		self.rot_vel += self.rot_acc * t
+		self.rot_vel = limit(self.rot_vel + self.rot_acc * t, -max_rot_speed, max_rot_speed)
 		self.rot_acc = self.x_acc = self.y_acc = 0
 		self.motors_parallel()
 		self.motors_perpendicular()
@@ -107,11 +112,15 @@ class Robot:
 			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.left_motor*mot_acc
 			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.left_motor*mot_acc
 	def friction(self):
-		if self.x_vel != 0:
+		if abs(self.x_vel) > min_speed:
 			self.x_acc += -fric_acc*self.x_vel/sqrt(self.x_vel**2+self.y_vel**2)
-		if self.y_vel != 0:
+		else: self.x_vel = 0
+		if abs(self.y_vel) > min_speed:
 			self.y_acc += -fric_acc*self.y_vel/sqrt(self.x_vel**2+self.y_vel**2)
-		self.rot_acc += -self.rot_vel*10
+		else: self.y_vel = 0
+		if abs(self.rot_vel) > min_rot_speed:
+			self.rot_acc += -fric_rot_acc*signum(self.rot_vel)
+		else: self.rot_vel = 0
 	def program(self, key, is_down, t):
 		if key == K_7:
 			if is_down:
@@ -156,14 +165,13 @@ robot = Robot()
 class MyThread(threading.Thread):
 	def run(self):
 		while 1:
-			t = 0.03
 			for event in pygame.event.get():
 				if not hasattr(event, 'key'): continue
 				is_down = event.type == KEYDOWN
 				if event.key == K_ESCAPE: sys.exit(0)
-				else: robot.program(event.key, is_down, t)
+				else: robot.program(event.key, is_down, time_step)
 			screen.fill((255, 255, 255))
-			robot.update(t)
+			robot.update(time_step)
 			pygame.display.flip()
 
 MyThread().start()
