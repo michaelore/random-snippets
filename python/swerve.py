@@ -2,9 +2,9 @@
 
 # Magic numbers!
 # Warning: may be arbitrary.
-min_speed = 2
 max_speed = 100
-friction_multiplier = 50 # Not to be confused with coefficient of friction
+fric_acc = 50 # Not to be confused with coefficient of friction
+mot_acc = 100
 
 import threading
 import pygame, sys
@@ -81,52 +81,36 @@ class Robot:
 		self.program(K_s, 1, t)
 		self.x_pos = limit(self.x_pos + self.x_vel * t, 0, 1024)
 		self.y_pos = limit(self.y_pos - self.y_vel * t, 0, 768)
-		self.rot = periodic_limit(self.rot + self.rot_vel *t, 0, 2*pi)
+		self.rot = periodic_limit(self.rot + self.rot_vel * t, 0, 2*pi)
 		self.wheel_rot = limit(self.wheel_rot + self.wheel_rot_vel * t, -pi/2, pi/2)
 		self.wheel_rot_vel = self.swerve_motor
 		self.x_vel = limit(self.x_vel + self.x_acc * t, -max_speed, max_speed)
 		self.y_vel = limit(self.y_vel + self.y_acc * t, -max_speed, max_speed)
-		if abs(self.x_vel) < min_speed: self.x_vel = 0
-		if abs(self.y_vel) < min_speed: self.y_vel = 0
 		self.rot_vel += self.rot_acc * t
 		self.rot_acc = self.x_acc = self.y_acc = 0
-		self.case_one()
-		self.case_two()
-		self.case_three()
-		self.case_four()
-		self.case_five()
-		self.case_six()
-		self.case_seven()
-		self.case_eight()
+		self.motors_parallel()
+		self.motors_perpendicular()
+		self.friction()
 		self.sprite.update((self.x_pos, self.y_pos), self.rot, self.wheel_rot)
-	def case_one(self):
+	def motors_parallel(self):
 		self.rot_acc += -cos(self.wheel_rot)*self.left_motor
-		self.x_acc += cos(self.wheel_rot)*sin(-self.rot)*self.left_motor/2*100
-		self.y_acc += cos(self.wheel_rot)*cos(-self.rot)*self.left_motor/2*100
-	def case_two(self):
+		self.x_acc += cos(self.wheel_rot)*sin(-self.rot)*self.left_motor/2*mot_acc
+		self.y_acc += cos(self.wheel_rot)*cos(-self.rot)*self.left_motor/2*mot_acc
 		self.rot_acc += cos(self.wheel_rot)*self.right_motor
-		self.x_acc += cos(self.wheel_rot)*sin(-self.rot)*self.right_motor/2*100
-		self.y_acc += cos(self.wheel_rot)*cos(-self.rot)*self.right_motor/2*100
-	def case_three(self):
-		self.x_acc += -cos(self.wheel_rot)*sin(self.rot)*signum(self.x_vel)*friction_multiplier
-		self.y_acc += -cos(self.wheel_rot)*cos(self.rot)*signum(self.y_vel)*friction_multiplier
-	def case_four(self):
-		self.x_acc += -cos(self.wheel_rot)*cos(self.rot)*signum(self.x_vel)*friction_multiplier*2
-		self.y_acc += -cos(self.wheel_rot)*sin(self.rot)*signum(self.y_vel)*friction_multiplier*2
-	def case_five(self):
+		self.x_acc += cos(self.wheel_rot)*sin(-self.rot)*self.right_motor/2*mot_acc
+		self.y_acc += cos(self.wheel_rot)*cos(-self.rot)*self.right_motor/2*mot_acc
+	def motors_perpendicular(self):
 		if abs(self.left_motor) >= abs(self.right_motor):
-			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.right_motor*100
-			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.right_motor*100
+			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.right_motor*mot_acc
+			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.right_motor*mot_acc
 		else:
-			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.left_motor*100
-			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.left_motor*100
-	def case_six(self):
-		self.x_acc += -sin(self.wheel_rot)*sin(self.rot)*signum(self.x_vel)*friction_multiplier*2
-		self.y_acc += -sin(self.wheel_rot)*cos(self.rot)*signum(self.y_vel)*friction_multiplier*2
-	def case_seven(self):
-		self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*signum(self.x_vel)*friction_multiplier
-		self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*signum(self.y_vel)*friction_multiplier
-	def case_eight(self):
+			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.left_motor*mot_acc
+			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.left_motor*mot_acc
+	def friction(self):
+		if self.x_vel != 0:
+			self.x_acc += -fric_acc*self.x_vel/sqrt(self.x_vel**2+self.y_vel**2)
+		if self.y_vel != 0:
+			self.y_acc += -fric_acc*self.y_vel/sqrt(self.x_vel**2+self.y_vel**2)
 		self.rot_acc += -self.rot_vel*10
 	def program(self, key, is_down, t):
 		if key == K_7:
@@ -164,6 +148,8 @@ class Robot:
 		elif key == K_s:
 			pass
 		else: pass
+	def reset(self):
+		self.__init__()
 
 robot = Robot()
 
