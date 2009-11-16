@@ -2,14 +2,15 @@
 
 # Magic numbers!
 # Warning: may be arbitrary.
-min_speed = 0.3
-min_rot_speed = 0.05
+time_step = 0.03
+min_speed = time_step * 20
+min_rot_speed = time_step / 2
 max_speed = 100
-max_rot_speed = 2
-fric_acc = 50
-fric_rot_acc = 1
+max_rot_speed = 0.5
+fric_acc = 40
+fric_rot_acc = 0.8
 mot_acc = 100
-time_step = 0.1
+mot_rot_acc = 1
 
 import threading
 import pygame, sys
@@ -98,26 +99,28 @@ class Robot:
 		self.friction()
 		self.sprite.update((self.x_pos, self.y_pos), self.rot, self.wheel_rot)
 	def motors_parallel(self):
-		self.rot_acc += -cos(self.wheel_rot)*self.left_motor
+		self.rot_acc += -cos(self.wheel_rot)*self.left_motor*mot_rot_acc
 		self.x_acc += cos(self.wheel_rot)*sin(-self.rot)*self.left_motor/2*mot_acc
 		self.y_acc += cos(self.wheel_rot)*cos(-self.rot)*self.left_motor/2*mot_acc
-		self.rot_acc += cos(self.wheel_rot)*self.right_motor
+		self.rot_acc += cos(self.wheel_rot)*self.right_motor*mot_rot_acc
 		self.x_acc += cos(self.wheel_rot)*sin(-self.rot)*self.right_motor/2*mot_acc
 		self.y_acc += cos(self.wheel_rot)*cos(-self.rot)*self.right_motor/2*mot_acc
 	def motors_perpendicular(self):
-		if abs(self.left_motor) >= abs(self.right_motor):
+		if signum(self.left_motor) != signum(self.right_motor):
+			pass
+		elif abs(self.left_motor) >= abs(self.right_motor):
 			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.right_motor*mot_acc
 			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.right_motor*mot_acc
 		else:
 			self.x_acc += -sin(self.wheel_rot)*cos(self.rot)*self.left_motor*mot_acc
 			self.y_acc += -sin(self.wheel_rot)*sin(self.rot)*self.left_motor*mot_acc
 	def friction(self):
-		if abs(self.x_vel) > min_speed:
+		if sqrt(self.x_vel**2 + self.y_vel**2) > min_speed:
 			self.x_acc += -fric_acc*self.x_vel/sqrt(self.x_vel**2+self.y_vel**2)
-		else: self.x_vel = 0
-		if abs(self.y_vel) > min_speed:
 			self.y_acc += -fric_acc*self.y_vel/sqrt(self.x_vel**2+self.y_vel**2)
-		else: self.y_vel = 0
+		else:
+			self.x_vel = 0
+			self.y_vel = 0
 		if abs(self.rot_vel) > min_rot_speed:
 			self.rot_acc += -fric_rot_acc*signum(self.rot_vel)
 		else: self.rot_vel = 0
