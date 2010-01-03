@@ -10,27 +10,33 @@ import Data.Maybe
 import qualified Data.HashTable as H
 import Random
 import System.IO
+import System.IO.Unsafe
 import System.Environment
 
-travesty :: Int -> Int-> String -> IO String
-travesty order chars raw = do
+--Warning: uses unsafeInterleaveIO
+travesty :: Int -> Maybe Int -> String -> IO String
+travesty order maybeChar raw = do
     let str = filter (flip elem (range ('\0','\DEL'))) raw
     table <- H.new (==) H.hashString
     forM_ (take (length str) . map (take order) . tails . cycle . reverse $ str) $ \charAndComb -> do
-        let (char:comb) = charAndComb -- comb is in reverse, for efficiency reasons.
+        let (char:rcomb) = charAndComb
+	let comb = reverse rcomb
         maybeVal <- H.lookup table comb
         case maybeVal of
             Just val -> do H.update table comb $ accum (+) val [(char, 1)]; return ()
             Nothing -> H.insert table comb $ accum (+) (array ('\0','\DEL') [(x,0) | x <- range ('\0','\DEL')]) [(char, 1)]
-    acc <- newIORef . reverse . take (order-1) $ str
-    replicateM_ chars $ do
-        comb <- liftM (take (order-1)) . readIORef $ acc
+    let loop comb = do
         maybeVal <- H.lookup table comb
         choice <- case maybeVal of
             Just val -> weightedPick . assocs $ val
-            Nothing -> return . head $ comb
-        modifyIORef acc (choice:)
-    liftM reverse . readIORef $ acc
+            Nothing -> error $ "The impossible happened! See line 32 of Travesty.hs\n"
+	next <- unsafeInterleaveIO $ loop (tail comb ++ [choice])
+	return $ choice:next
+    let initialState = take (order-1) str
+    output <- liftM (initialState++) $ loop initialState
+    case maybeChar of
+	Just char -> return $ take char output
+	Nothing -> return output
 
 weightedPick :: [(a, Int)] -> IO a
 weightedPick choices = liftM (`weightedIndex` choices) . randomRIO $ (0 :: Int, weightedLength choices - 1)
@@ -47,5 +53,13 @@ weightedPick choices = liftM (`weightedIndex` choices) . randomRIO $ (0 :: Int, 
           weightedLength' ((x, n):xs) acc = weightedLength' ((x, n-1):xs) (acc+1)
 
 main = do
-    [order, chars] <- liftM (map read) getArgs
-    getContents >>= travesty order chars >>= putStrLn
+    argv <- getArgs
+    (order, maybeChar) <- case argv of
+	(_:_:_:_) -> error $ "Too many arguments.\n" ++ helpMessage
+	[order, char] -> return (read order, Just . read $ char)
+	[order] -> return (read order, Nothing)
+    getContents >>= travesty order maybeChar >>= putStrLn
+
+helpMessage = "Type either: travesty order chars, or\n" ++
+	      "             travesty order\n" ++
+	      "Where order is the order of the desired travesty, and chars is the number of desired characters. If chars is omitted, the output is infinite. Either way, the output is produced lazily."
