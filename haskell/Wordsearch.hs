@@ -1,50 +1,67 @@
---This thing is a hack...
-module Wordsearch (wordSearch) where
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+module Wordsearch where
+
+import Control.Monad
+import Control.Monad.Random
+import Control.Monad.Reader
 import Data.List
-import Data.Maybe
+import System.Environment
 import System.Random
 
-wordSearch :: (Int, Int) -> StdGen -> [String] -> [String]
-wordSearch settings gen = format settings . pad gen . rawSearch settings gen
+data Params = Params { getSize :: (Int, Int), getWords :: [String] }
 
-format :: (Int, Int) -> String -> [String]
-format _ [] = []
-format (width, height) xs = (take width xs) : (format (width, height) (drop width xs))
+newtype RandomTReader r a = RTS { runRTS :: RandT StdGen (Reader r) a }
+    deriving (Monad, MonadRandom, MonadReader r)
 
-pad :: StdGen -> [Maybe Char] -> String
-pad initGen = fst . foldr addChar ([], initGen)
-  where addChar (Just x) (xs, gen) = ((x:xs), gen)
-  	addChar Nothing (xs, gen) = ((((charList!!) $ fst $ randCharList gen):xs), snd $ next gen)
-	randCharList = randomR (0, (length charList)-1)
+evalRTS :: RandomTReader r a -> r -> StdGen -> a
+evalRTS m p g = runReader (evalRandT (runRTS m) g) p
 
-rawSearch :: (Int, Int) -> StdGen -> [String] -> [Maybe Char]
-rawSearch (width, height) gen = fst . foldr (addWord (width, height)) ((replicate (width*height) Nothing), gen)
+wordSearch :: (Int, Int) -> [String] -> StdGen -> [String]
+wordSearch size words = evalRTS (emptySearch >>= addWords >>= mapM padChar >>= format) (Params size words)
 
-addWord :: (Int, Int) -> String -> ([Maybe Char], StdGen) -> ([Maybe Char], StdGen)
-addWord _ [] x = x
-addWord (width, height) word (search, gen) = let (startPos, gen') = randSearch gen
-        			       		 (dir, gen'') = randDir gen'
-						 endPos = startPos+dir*((length word)-1)
-						 randDir g = ([-width-1, -width, -width+1, -1, 1, width-1, width, width+1] !! (fst $ (randomR (0, 7) g)), (snd $ next g))
-						 randSearch = randomR (0, (width*height-1))
-						 in if ((width*height > endPos) && (endPos > -1) && ((startPos `mod` width) + ((length word)-1)*(dir `mod` width) == endPos `mod` width))
-						 	then let it = foldr add (Just search) (zip (iterate (dir+) startPos) word)
-								 in if (isNothing it)
-								       then addWord (width, height) word (search, gen'')
-								       else (fromMaybe [] it, gen'')
-						 	else addWord (width, height) word (search, gen'')
+emptySearch :: RandomTReader Params [Maybe Char]
+emptySearch = do
+  (width, height) <- asks getSize
+  return $ replicate (width*height) Nothing
 
-add :: (Eq b) => (Int, b) -> (Maybe [Maybe b]) -> (Maybe [Maybe b])
-add _ Nothing = Nothing
-add (n, x) (Just list) = case list !! n of
-			   Just y -> if (y == x)
-			   		then Just list
-					else Nothing
-			   Nothing -> Just (replace list n (Just x))
+addWords :: [Maybe Char] -> RandomTReader Params [Maybe Char]
+addWords search = asks getWords >>= foldM addWord search
+
+addWord :: [Maybe Char] -> String -> RandomTReader Params [Maybe Char]
+addWord search word = do
+  (width, height) <- asks getSize
+  startPos <- getRandomR (0, (width*height-1))
+  let dirs = [-width-1, -width, -width+1, -1, 1, width-1, width, width+1]
+  dir <- liftM (dirs!!) $ getRandomR (0, 7)
+  let endPos = startPos+dir*((length word)-1)
+  if ((width*height > endPos) && (endPos > -1) && ((startPos `mod` width) + ((length word)-1)*(dir `mod` width) == endPos `mod` width))
+     then let maybeSearch = foldM addChar search (zip (iterate (dir+) startPos) word)
+             in case maybeSearch of
+                  Just newSearch -> return newSearch
+                  Nothing -> addWord search word
+     else
+         addWord search word
+
+addChar :: [Maybe Char] -> (Int, Char) -> Maybe [Maybe Char]
+addChar search (n, x) = case search !! n of
+                          Just y -> if (y == x)
+                                    then Just search
+                                    else Nothing
+                          Nothing -> Just (replace search n (Just x))
 
 replace :: [a] -> Int -> a -> [a]
 replace xs n x = let (first, second) = splitAt (n+1) xs
 		     in (init first) ++ [x] ++ second
 
+padChar :: Maybe Char -> RandomTReader Params Char
+padChar Nothing = liftM (charList!!) $ getRandomR (0, length charList-1)
+padChar (Just x) = return x
+
 charList :: String
 charList = ['a'..'z']
+
+format :: String -> RandomTReader Params [String]
+format [] = return []
+format xs = do
+  (width, height) <- asks getSize
+  liftM (take width xs :) (format $ drop width xs)
