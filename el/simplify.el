@@ -93,6 +93,7 @@
 		 ((eql (length expr) 2) (cadr expr))
 		 (t expr)))
 
+;Warning -- incomplete
 (simp-rule /
 	   ; (/ x 1) == x
 	   (cons '/
@@ -110,4 +111,4 @@
 	   ; (/ x y 0) == (/ x 0)
 	   (if (some (lambda (x) (eql x 0)) (cddr expr))
 	       `(/ ,(cadr expr) 0)
-	     expr)
+	     expr))
