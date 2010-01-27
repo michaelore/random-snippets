@@ -63,13 +63,13 @@
 (defmacro add-dd-fun (fun body)
   `(progn (push ',fun *dd-fun-keys*)
 	  (puthash ',fun (lambda (var)
-			   ',body)
+			   ,body)
 		   *dd-funs*)))
 
-(add-dd-fun exp (exp var))
+(add-dd-fun exp `(exp ,var))
 
-(add-dd-fun sin (cos var))
+(add-dd-fun sin `(cos ,var))
 
-(add-dd-fun cos (- (sin var)))
+(add-dd-fun cos `(- (sin ,var)))
 
-(add-dd-fun tan (/ 1 (expt (cos var) 2)))
+(add-dd-fun tan `(/ 1 (expt (cos ,var) 2)))
