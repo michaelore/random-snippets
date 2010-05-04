@@ -32,8 +32,8 @@ addOrRemove playlistDir albumDir = do putStrLn ""
                                                                mapM_ putStrLn intersection
                                                                putStrLn "Songs missing from your playlist:"
                                                                mapM_ putStrLn (contentsAlbum \\ intersection)
-                                                               putStrLn "Should I add the rest of the songs?"
-                                                               addToPlaylist (contentsAlbum \\ intersection) <?> (do putStrLn "Should I remove the album completely?"
+                                                               putStrLn "Should I add the rest of the songs? (y/N)"
+                                                               addToPlaylist (contentsAlbum \\ intersection) <?> (do putStrLn "Should I remove the album completely? (y/N)"
                                                                                                                      removeFromPlaylist intersection <?> return ())
                                       where addToPlaylist = mapM_ (\x -> flip verboseCopy (playlistDir </> x) . (albumDir </>) $ x)
                                             removeFromPlaylist = mapM_ (verboseRemove . (playlistDir </>))
@@ -53,7 +53,11 @@ act1 <?> act2 = do response <- getLine
 getAlbumsFrom dir = do contents <- liftM (filter (\x -> x /= "." && x /= "..")) $ getDirectoryContents dir
                        filterM (doesDirectoryExist . (dir </>)) contents
 
-getMusicFrom dir = liftM (sortBy compareByTrackNum . filter (\x -> takeExtension x == ".ogg")) $ getDirectoryContents dir
+isOneOf x = or . map (x ==)
+
+musicExtensions = [".ogg", ".OGG", ".mp3", ".MP3"]
+
+getMusicFrom dir = liftM (sortBy compareByTrackNum . filter (\x -> takeExtension x `isOneOf` musicExtensions)) $ getDirectoryContents dir
 
 compareByTrackNum x y = compare (trackNum x) (trackNum y)
 
