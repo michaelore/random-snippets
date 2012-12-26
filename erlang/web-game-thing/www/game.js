@@ -5,8 +5,12 @@ function click(id) {
         var op;
         if ($("#" + id).attr("src")=="/images/x.png") {
             op = "clickx";
+            var snd = new Audio('laser.wav');
+            snd.play();
         } else {
             op = "clicko";
+            var snd = new Audio('ice.wav');
+            snd.play();
         }
         $.getJSON(server,
                 {'op': op, 'id': id},

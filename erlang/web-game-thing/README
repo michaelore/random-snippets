@@ -9,3 +9,5 @@ $ erl
 It listens on port 8000.
 
 The dependencies are Erlang and Yaws.
+
+Sounds are taken from http://www.grsites.com/archive/sounds/ and shortened
