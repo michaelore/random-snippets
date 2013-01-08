@@ -1,3 +1,4 @@
+; Credit to Paul Graham in his 1993 book "On Lisp" for the aif macro below
 (defmacro aif (pred then &optional else)
   `(let ((it ,pred))
      (if it
